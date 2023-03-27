@@ -2,6 +2,10 @@ extends GridMap
 
 var dungeon_map = []
 @export var min_width = 3
+@export var width:int = 50
+@export var height:int = 20
+@export var depth:int = 50
+
 
 func set_size(width,height,depth):
 	for i in width:
@@ -80,14 +84,54 @@ func bsp(grid_width,grid_height,grid_depth,min_width,min_height,min_depth,iterat
 		split_inds.clear()
 		split_inds = new_splits
 		new_splits = []
-	print(nodes)
+	print(nodes.slice(pow(2,iterations)-1))
+	return nodes.slice(pow(2,iterations)-1)
+
+func fill_data_grid(width, height, depth, x_off, y_off, z_off):
+	for i in range(x_off, x_off+width):
+		for j in range(y_off, y_off + height):
+			for k in range(z_off, z_off + depth):
+				dungeon_map[i][j][k] = true
+
+func generate_rooms(splits):
+	for split in splits:
+		print(split)
+		var width = randi_range(1,split[1][0] - split[0][0])
+		var height = randi_range(1,split[1][1] - split[0][1])
+		var depth = randi_range(1,split[1][2] - split[0][2])
+		var x_off = randi_range(0,split[1][0] - split[0][0] - width)
+		var y_off = randi_range(0,split[1][1] - split[0][1] - height)
+		var z_off = randi_range(0,split[1][2] - split[0][2] - depth)
+		fill_data_grid(width,height,depth,x_off,y_off,z_off)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	bsp(50,20,50,2,1,2,4)
+	
+	for i in range(width):
+		var double_arr = []
+		
+		for j in range(height):
+			var single_arr = []
+			
+			for k in range(depth):
+				single_arr.append(false)
+			double_arr.append(single_arr)
+			
+		dungeon_map.append(double_arr)
+		
+	var splits = bsp(width,height,depth,2,1,2,4)
+	generate_rooms(splits)
 	#print(dungeon_map)
-	set_cell_item(Vector3i(0,0,0),1)
-	set_cell_item(Vector3i(0,2,0),1)
+	#print(dungeon_map)
+	for i in range(width):
+		
+		for j in range(height):
+			
+			for k in range(depth):
+				if dungeon_map[i][j][k]:
+					set_cell_item(Vector3i(i,j,k),1)
+	#set_cell_item(Vector3i(0,0,0),1)
+	#set_cell_item(Vector3i(0,2,0),1)
 	
 	pass # Replace with function body.
 
